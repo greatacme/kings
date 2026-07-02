@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>열왕기 재위기간</title>
+  <style>
+    :root {
+      --ink: #201a17;
+      --muted: #6d635d;
+      --paper: #f8f4ec;
+      --paper-2: #fffaf1;
+      --line: rgba(74, 58, 44, .18);
+      --judah: #9b3f2f;
+      --judah-soft: #f3d6ca;
+      --israel: #1f6f78;
+      --israel-soft: #cfe8e7;
+      --gold: #b88924;
+      --shadow: 0 18px 50px rgba(55, 41, 30, .13);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 16% 10%, rgba(184, 137, 36, .14), transparent 28rem),
+        linear-gradient(135deg, #f4efe5 0%, #fffaf2 52%, #edf5f3 100%);
+      font-family: "Pretendard Variable", Pretendard, "SUIT Variable", SUIT, "Noto Sans KR", "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+      line-height: 1.5;
+    }
+    .shell { max-width: 1180px; margin: 0 auto; padding: 22px 16px 44px; }
+    header {
+      padding: 6px 0 14px;
+    }
+    h1 {
+      margin: 0;
+      font-size: clamp(2.1rem, 5vw, 4.6rem);
+      line-height: .98;
+      letter-spacing: 0;
+      font-weight: 850;
+    }
+    .board-wrap {
+      margin-top: 8px;
+      overflow: auto;
+      max-height: 84vh;
+      border: 1px solid rgba(28, 24, 20, .22);
+      background: #f7f5ea;
+      box-shadow: var(--shadow);
+    }
+    .board {
+      min-width: 860px;
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      column-gap: 18px;
+      padding: 2px;
+    }
+    .board-head {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      column-gap: 18px;
+      align-items: center;
+      height: 34px;
+      margin-bottom: 2px;
+      color: #5f554e;
+      font-size: .9rem;
+      font-weight: 650;
+      text-align: center;
+      border-bottom: 1px solid rgba(28, 24, 20, .42);
+    }
+    .lane {
+      position: relative;
+      min-height: calc(var(--rows, 120) * var(--row-h, 32px));
+    }
+    .lane.judah { grid-column: 1; }
+    .lane.israel { grid-column: 2; }
+    .king-card {
+      position: absolute;
+      left: 0;
+      right: 0;
+      min-height: 22px;
+      padding: 7px 10px 12px;
+      border: 1px solid #1c1814;
+      box-shadow: none;
+      transition: opacity .14s ease, transform .14s ease, filter .14s ease;
+      overflow: hidden;
+    }
+    .king-card:hover { transform: translateY(-1px); filter: saturate(1.08); }
+    .king-card.dim { opacity: .16; }
+    .king-card.tone-0.judah {
+      color: #241915;
+      background: linear-gradient(135deg, #f7dcc9 0%, #f0c1a6 100%);
+      border-color: #8f513a;
+    }
+    .king-card.tone-1.judah {
+      color: #221b10;
+      background: linear-gradient(135deg, #ffe8a8 0%, #f3c862 100%);
+      border-color: #9b7421;
+    }
+    .king-card.tone-0.israel {
+      color: #102524;
+      background: linear-gradient(135deg, #cfece7 0%, #8ed0c8 100%);
+      border-color: #327a75;
+    }
+    .king-card.tone-1.israel {
+      color: #152213;
+      background: linear-gradient(135deg, #d9ecd0 0%, #a7d38e 100%);
+      border-color: #5d843e;
+    }
+    .king-card.israel {
+      text-align: right;
+    }
+    .king-name {
+      position: absolute;
+      top: 6px;
+      left: 10px;
+      right: 64px;
+      width: fit-content;
+      max-width: calc(100% - 66px);
+      padding: 2px 6px;
+      background: rgba(80, 48, 28, .12);
+      border-radius: 3px;
+      font-weight: 650;
+      overflow-wrap: anywhere;
+      line-height: 1.2;
+    }
+    .king-card.israel .king-name {
+      left: 64px;
+      right: 10px;
+      margin-left: auto;
+      background: rgba(20, 76, 73, .12);
+    }
+    .year-marker {
+      position: absolute;
+      right: 10px;
+      width: 38px;
+      text-align: center;
+      color: #000;
+      font-family: "Segoe UI", "Pretendard Variable", Pretendard, "Noto Sans KR", sans-serif;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      line-height: 1.1;
+      z-index: 2;
+    }
+    .king-card.israel .year-marker {
+      left: 18px;
+      right: auto;
+      text-align: center;
+    }
+    .year-arrow {
+      position: absolute;
+      right: 28.5px;
+      width: 1px;
+      background: rgba(20, 17, 14, .48);
+      z-index: 1;
+    }
+    .king-card.israel .year-arrow {
+      left: 36.5px;
+      right: auto;
+    }
+    .year-arrow::after {
+      content: "";
+      position: absolute;
+      left: -4px;
+      bottom: -1px;
+      width: 0;
+      height: 0;
+      border-left: 4px solid transparent;
+      border-right: 4px solid transparent;
+      border-top: 7px solid rgba(20, 17, 14, .62);
+    }
+    @media (max-width: 860px) {
+      .shell { padding-inline: 14px; }
+      .board { min-width: 680px; column-gap: 12px; padding-inline: 2px; }
+      .board-head { column-gap: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <h1>열왕기 재위기간</h1>
+    </header>
+
+    <section class="board-wrap" aria-label="왕국별 재위기간 비교 보드">
+      <div class="board" id="board">
+        <div class="board-head">
+          <strong>유다(예루살렘)</strong>
+          <strong>이스라엘(사마리아)</strong>
+        </div>
+        <div class="lane judah" id="lane-judah"></div>
+        <div class="lane israel" id="lane-israel"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const DATA = {"source": "열왕기_재위기간.xlsx", "sheet": "열왕기", "maxRow": 121, "rulers": [{"kingdom": "유다", "name": "솔로몬", "label": "솔로몬(40)", "duration": 40.0, "durationText": "40년", "row": 3, "notes": []}, {"kingdom": "유다", "name": "르호보암", "label": "르호보암(17)", "duration": 17.0, "durationText": "17년", "row": 6, "notes": ["이집트 시삭"]}, {"kingdom": "이스라엘", "name": "여로보암", "label": "여로보암(22)", "duration": 22.0, "durationText": "22년", "row": 6, "notes": ["이집트 시삭"]}, {"kingdom": "유다", "name": "아비야", "label": "아비야(3)", "duration": 3.0, "durationText": "3년", "row": 9, "notes": []}, {"kingdom": "유다", "name": "아사", "label": "아사(41)", "duration": 41.0, "durationText": "41년", "row": 12, "notes": []}, {"kingdom": "이스라엘", "name": "나답", "label": "나답(2)", "duration": 2.0, "durationText": "2년", "row": 15, "notes": []}, {"kingdom": "이스라엘", "name": "바아사", "label": "바아사(24)", "duration": 24.0, "durationText": "24년", "row": 18, "notes": ["시리아 벤하닷"]}, {"kingdom": "이스라엘", "name": "엘라", "label": "엘라(2)", "duration": 2.0, "durationText": "2년", "row": 21, "notes": []}, {"kingdom": "이스라엘", "name": "시므리", "label": "시므리(0)", "duration": 0.0, "durationText": "수개월", "row": 24, "notes": []}, {"kingdom": "이스라엘", "name": "오므리", "label": "오므리(12)", "duration": 12.0, "durationText": "12년", "row": 27, "notes": []}, {"kingdom": "이스라엘", "name": "아합", "label": "아합(22)", "duration": 22.0, "durationText": "22년", "row": 30, "notes": ["엘리야"]}, {"kingdom": "유다", "name": "여호사밧", "label": "여호사밧(25)", "duration": 25.0, "durationText": "25년", "row": 33, "notes": []}, {"kingdom": "이스라엘", "name": "아하시야", "label": "아하시야(2)", "duration": 2.0, "durationText": "2년", "row": 36, "notes": []}, {"kingdom": "이스라엘", "name": "요람(여호람)", "label": "요람(여호람)(12)", "duration": 12.0, "durationText": "12년", "row": 39, "notes": ["엘리사"]}, {"kingdom": "유다", "name": "여호람", "label": "여호람(8)", "duration": 8.0, "durationText": "8년", "row": 42, "notes": []}, {"kingdom": "유다", "name": "아하시야", "label": "아하시야(1)", "duration": 1.0, "durationText": "1년", "row": 46, "notes": []}, {"kingdom": "유다", "name": "아달랴", "label": "아달랴(6)", "duration": 6.0, "durationText": "6년", "row": 49, "notes": []}, {"kingdom": "이스라엘", "name": "예후", "label": "예후(28)", "duration": 28.0, "durationText": "28년", "row": 49, "notes": []}, {"kingdom": "유다", "name": "요아스", "label": "요아스(40)", "duration": 40.0, "durationText": "40년", "row": 52, "notes": []}, {"kingdom": "이스라엘", "name": "여호아하스", "label": "여호아하스(17)", "duration": 17.0, "durationText": "17년", "row": 55, "notes": []}, {"kingdom": "이스라엘", "name": "여호아스", "label": "여호아스(16)", "duration": 16.0, "durationText": "16년", "row": 58, "notes": []}, {"kingdom": "유다", "name": "아마샤", "label": "아마샤(29)", "duration": 29.0, "durationText": "29년", "row": 61, "notes": []}, {"kingdom": "이스라엘", "name": "여로보암2", "label": "여로보암2(41)", "duration": 41.0, "durationText": "41년", "row": 64, "notes": []}, {"kingdom": "유다", "name": "웃시야(아사랴)", "label": "웃시야(아사랴)(52)", "duration": 52.0, "durationText": "52년", "row": 67, "notes": ["아모스"]}, {"kingdom": "이스라엘", "name": "스가랴", "label": "스가랴(0.5)", "duration": 0.5, "durationText": "약 6개월", "row": 70, "notes": []}, {"kingdom": "이스라엘", "name": "살룸", "label": "살룸(0.1)", "duration": 0.1, "durationText": "약 1개월", "row": 73, "notes": []}, {"kingdom": "이스라엘", "name": "므나헴", "label": "므나헴(10)", "duration": 10.0, "durationText": "10년", "row": 76, "notes": []}, {"kingdom": "이스라엘", "name": "브기히야", "label": "브기히야(2)", "duration": 2.0, "durationText": "2년", "row": 79, "notes": []}, {"kingdom": "이스라엘", "name": "베가", "label": "베가(20)", "duration": 20.0, "durationText": "20년", "row": 82, "notes": []}, {"kingdom": "유다", "name": "요담", "label": "요담(16)", "duration": 16.0, "durationText": "16년", "row": 84, "notes": []}, {"kingdom": "유다", "name": "아하스", "label": "아하스(16)", "duration": 16.0, "durationText": "16년", "row": 87, "notes": []}, {"kingdom": "이스라엘", "name": "호세아", "label": "호세아(9)", "duration": 9.0, "durationText": "9년", "row": 90, "notes": []}, {"kingdom": "유다", "name": "히스기야", "label": "히스기야(29)", "duration": 29.0, "durationText": "29년", "row": 93, "notes": []}, {"kingdom": "이스라엘", "name": "앗시리아 살만에셀", "label": "앗시리아 살만에셀", "duration": null, "durationText": "기록 없음", "row": 96, "notes": []}, {"kingdom": "이스라엘", "name": "앗시리아 산헤립", "label": "앗시리아 산헤립", "duration": null, "durationText": "기록 없음", "row": 98, "notes": ["이사야"]}, {"kingdom": "이스라엘", "name": "앗시리아 에살핫돈", "label": "앗시리아 에살핫돈", "duration": null, "durationText": "기록 없음", "row": 100, "notes": []}, {"kingdom": "유다", "name": "므낫세", "label": "므낫세(55)", "duration": 55.0, "durationText": "55년", "row": 102, "notes": []}, {"kingdom": "유다", "name": "아몬", "label": "아몬(2)", "duration": 2.0, "durationText": "2년", "row": 105, "notes": []}, {"kingdom": "유다", "name": "요시야", "label": "요시야(31)", "duration": 31.0, "durationText": "31년", "row": 108, "notes": []}, {"kingdom": "유다", "name": "여호아하스", "label": "여호아하스(0.25)", "duration": 0.25, "durationText": "약 3개월", "row": 111, "notes": []}, {"kingdom": "유다", "name": "엘리야김/여호야김", "label": "엘리야김/여호야김(11)", "duration": 11.0, "durationText": "11년", "row": 114, "notes": []}, {"kingdom": "이스라엘", "name": "바빌로니아 느부갓네살", "label": "바빌로니아 느부갓네살", "duration": null, "durationText": "기록 없음", "row": 115, "notes": []}, {"kingdom": "유다", "name": "여호야긴", "label": "여호야긴(0.25)", "duration": 0.25, "durationText": "약 3개월", "row": 117, "notes": []}, {"kingdom": "유다", "name": "맛다디야/시드기야", "label": "맛다디야/시드기야(11)", "duration": 11.0, "durationText": "11년", "row": 120, "notes": []}], "events": [{"row": 6, "note": "이집트 시삭"}, {"row": 18, "note": "시리아 벤하닷"}, {"row": 30, "note": "엘리야"}, {"row": 39, "note": "엘리사"}, {"row": 40, "note": "열왕기하 1:17(여호람이 이스라엘 왕 요람 2년에 즉위했다는 기록, 8:16의 \"5년\" 기록과 다른 이중 연대기)"}, {"row": 67, "note": "아모스"}, {"row": 98, "note": "이사야"}], "rows": [{"row": 1, "cells": ["유다(예루살렘)", null, null, null, "이스라엘(사마리아)", null, null]}, {"row": 2, "cells": [null, null, null, null, "", null, null]}, {"row": 3, "cells": ["솔로몬(40)", 0, null, null, null, null, null]}, {"row": 4, "cells": [null, 40, null, null, null, null, null]}, {"row": 5, "cells": [null, null, null, null, null, null, null]}, {"row": 6, "cells": ["르호보암(17)", 0, null, 0, "여로보암(22)", null, "이집트 시삭"]}, {"row": 7, "cells": [null, 17, null, null, null, null, null]}, {"row": 8, "cells": [null, null, null, null, null, null, null]}, {"row": 9, "cells": ["아비야(3)", 0, null, 18, null, null, null]}, {"row": 10, "cells": [null, 3, null, null, null, null, null]}, {"row": 11, "cells": [null, null, null, null, null, null, null]}, {"row": 12, "cells": ["아사(41)", 0, null, 20, null, null, null]}, {"row": 13, "cells": [null, null, null, 22, null, null, null]}, {"row": 14, "cells": [null, null, null, null, null, null, null]}, {"row": 15, "cells": [null, 2, null, 0, "나답(2)", null, null]}, {"row": 16, "cells": [null, null, null, 2, null, null, null]}, {"row": 17, "cells": [null, null, null, null, null, null, null]}, {"row": 18, "cells": [null, 3, null, 0, "바아사(24)", null, "시리아 벤하닷"]}, {"row": 19, "cells": [null, null, null, 24, null, null, null]}, {"row": 20, "cells": [null, null, null, null, null, null, null]}, {"row": 21, "cells": [null, 26, null, 0, "엘라(2)", null, null]}, {"row": 22, "cells": [null, null, null, 2, null, null, null]}, {"row": 23, "cells": [null, null, null, null, null, null, null]}, {"row": 24, "cells": [null, 27, null, 0, "시므리(0)", null, null]}, {"row": 25, "cells": [null, null, null, 0, null, null, null]}, {"row": 26, "cells": [null, null, null, null, null, null, null]}, {"row": 27, "cells": [null, 31, null, 0, "오므리(12)", null, null]}, {"row": 28, "cells": [null, null, null, 12, null, null, null]}, {"row": 29, "cells": [null, null, null, null, null, null, null]}, {"row": 30, "cells": [null, 38, null, 0, "아합(22)", null, "엘리야"]}, {"row": 31, "cells": [null, 41, null, null, null, null, null]}, {"row": 32, "cells": [null, null, null, null, null, null, null]}, {"row": 33, "cells": ["여호사밧(25)", 0, null, 4, null, null, null]}, {"row": 34, "cells": [null, null, null, 22, null, null, null]}, {"row": 35, "cells": [null, null, null, null, null, null, null]}, {"row": 36, "cells": [null, 17, null, 0, "아하시야(2)", null, null]}, {"row": 37, "cells": [null, null, null, 2, null, null, null]}, {"row": 38, "cells": [null, null, null, null, null, null, null]}, {"row": 39, "cells": [null, 18, null, 0, "요람(여호람)(12)", null, "엘리사"]}, {"row": 40, "cells": [null, 25, null, null, null, null, "열왕기하 1:17(여호람이 이스라엘 왕 요람 2년에 즉위했다는 기록, 8:16의 \"5년\" 기록과 다른 이중 연대기)"]}, {"row": 41, "cells": [null, null, null, null, null, null, null]}, {"row": 42, "cells": ["여호람(8)", 0, null, 5, null, null, null]}, {"row": 43, "cells": [null, 2, null, null, null, null, null]}, {"row": 44, "cells": [null, 8, null, null, null, null, null]}, {"row": 45, "cells": [null, null, null, null, null, null, null]}, {"row": 46, "cells": ["아하시야(1)", 0, null, 11, null, null, null]}, {"row": 47, "cells": [null, 1, null, 12, null, null, null]}, {"row": 48, "cells": [null, null, null, null, null, null, null]}, {"row": 49, "cells": ["아달랴(6)", 0, null, 0, "예후(28)", null, null]}, {"row": 50, "cells": [null, 6, null, null, null, null, null]}, {"row": 51, "cells": [null, null, null, null, null, null, null]}, {"row": 52, "cells": ["요아스(40)", 0, null, 7, null, null, null]}, {"row": 53, "cells": [null, null, null, 28, null, null, null]}, {"row": 54, "cells": [null, null, null, null, null, null, null]}, {"row": 55, "cells": [null, 23, null, 0, "여호아하스(17)", null, null]}, {"row": 56, "cells": [null, null, null, 17, null, null, null]}, {"row": 57, "cells": [null, null, null, null, null, null, null]}, {"row": 58, "cells": [null, 37, null, 0, "여호아스(16)", null, null]}, {"row": 59, "cells": [null, 40, null, null, null, null, null]}, {"row": 60, "cells": [null, null, null, null, null, null, null]}, {"row": 61, "cells": ["아마샤(29)", 0, null, 2, null, null, null]}, {"row": 62, "cells": [null, null, null, 16, null, null, null]}, {"row": 63, "cells": [null, null, null, null, null, null, null]}, {"row": 64, "cells": [null, 15, null, 0, "여로보암2(41)", null, null]}, {"row": 65, "cells": [null, 29, null, null, null, null, null]}, {"row": 66, "cells": [null, null, null, null, null, null, null]}, {"row": 67, "cells": ["웃시야(아사랴)(52)", 0, null, 27, null, null, "아모스"]}, {"row": 68, "cells": [null, null, null, 41, null, null, null]}, {"row": 69, "cells": [null, null, null, null, null, null, null]}, {"row": 70, "cells": [null, 38, null, 0, "스가랴(0.5)", null, null]}, {"row": 71, "cells": [null, null, null, 0.5, null, null, null]}, {"row": 72, "cells": [null, null, null, null, null, null, null]}, {"row": 73, "cells": [null, 39, null, 0, "살룸(0.1)", null, null]}, {"row": 74, "cells": [null, null, null, 0, null, null, null]}, {"row": 75, "cells": [null, null, null, null, null, null, null]}, {"row": 76, "cells": [null, 39, null, 0, "므나헴(10)", null, null]}, {"row": 77, "cells": [null, null, null, 10, null, null, null]}, {"row": 78, "cells": [null, null, null, null, null, null, null]}, {"row": 79, "cells": [null, 50, null, 0, "브기히야(2)", null, null]}, {"row": 80, "cells": [null, null, null, 2, null, null, null]}, {"row": 81, "cells": [null, null, null, null, null, null, null]}, {"row": 82, "cells": [null, 52, null, 0, "베가(20)", null, null]}, {"row": 83, "cells": [null, null, null, null, null, null, null]}, {"row": 84, "cells": ["요담(16)", 0, null, 2, null, null, null]}, {"row": 85, "cells": [null, 16, null, null, null, null, null]}, {"row": 86, "cells": [null, null, null, null, null, null, null]}, {"row": 87, "cells": ["아하스(16)", 0, null, 17, null, null, null]}, {"row": 88, "cells": [null, null, null, 20, null, null, null]}, {"row": 89, "cells": [null, null, null, null, null, null, null]}, {"row": 90, "cells": [null, 12, null, 0, "호세아(9)", null, null]}, {"row": 91, "cells": [null, 16, null, null, null, null, null]}, {"row": 92, "cells": [null, null, null, null, null, null, null]}, {"row": 93, "cells": ["히스기야(29)", 0, null, 3, null, null, null]}, {"row": 94, "cells": [null, null, null, 9, null, null, null]}, {"row": 95, "cells": [null, null, null, null, null, null, null]}, {"row": 96, "cells": [null, 6, null, 0, "앗시리아 살만에셀", null, null]}, {"row": 97, "cells": [null, null, null, null, null, null, null]}, {"row": 98, "cells": [null, 14, null, 0, "앗시리아 산헤립", null, "이사야"]}, {"row": 99, "cells": [null, null, null, null, null, null, null]}, {"row": 100, "cells": [null, 29, null, 0, "앗시리아 에살핫돈", null, null]}, {"row": 101, "cells": [null, null, null, null, null, null, null]}, {"row": 102, "cells": ["므낫세(55)", 0, null, null, null, null, null]}, {"row": 103, "cells": [null, 55, null, null, null, null, null]}, {"row": 104, "cells": [null, null, null, null, null, null, null]}, {"row": 105, "cells": ["아몬(2)", 0, null, null, null, null, null]}, {"row": 106, "cells": [null, 2, null, null, null, null, null]}, {"row": 107, "cells": [null, null, null, null, null, null, null]}, {"row": 108, "cells": ["요시야(31)", 0, null, null, null, null, null]}, {"row": 109, "cells": [null, 31, null, null, null, null, null]}, {"row": 110, "cells": [null, null, null, null, null, null, null]}, {"row": 111, "cells": ["여호아하스(0.25)", 0, null, null, null, null, null]}, {"row": 112, "cells": [null, 0, null, null, null, null, null]}, {"row": 113, "cells": [null, null, null, null, null, null, null]}, {"row": 114, "cells": ["엘리야김/여호야김(11)", 0, null, null, null, null, null]}, {"row": 115, "cells": [null, 11, null, 0, "바빌로니아 느부갓네살", null, null]}, {"row": 116, "cells": [null, null, null, null, null, null, null]}, {"row": 117, "cells": ["여호야긴(0.25)", 0, null, null, null, null, null]}, {"row": 118, "cells": [null, 0, null, null, null, null, null]}, {"row": 119, "cells": [null, null, null, null, null, null, null]}, {"row": 120, "cells": ["맛다디야/시드기야(11)", 0, null, 8, null, null, null]}, {"row": 121, "cells": [null, 11, null, null, null, null, null]}], "cards": {"judah": [{"kingdom": "유다", "name": "솔로몬(40)", "startRow": 3, "endRow": 5, "startYear": 0, "endYear": 40, "years": [{"row": 3, "value": 0}, {"row": 4, "value": 40}], "duration": 40.0, "tone": 0}, {"kingdom": "유다", "name": "르호보암(17)", "startRow": 6, "endRow": 8, "startYear": 0, "endYear": 17, "years": [{"row": 6, "value": 0}, {"row": 7, "value": 17}], "duration": 17.0, "tone": 1}, {"kingdom": "유다", "name": "아비야(3)", "startRow": 9, "endRow": 11, "startYear": 0, "endYear": 3, "years": [{"row": 9, "value": 0}, {"row": 10, "value": 3}], "duration": 3.0, "tone": 0}, {"kingdom": "유다", "name": "아사(41)", "startRow": 12, "endRow": 32, "startYear": 0, "endYear": 41, "years": [{"row": 12, "value": 0}, {"row": 15, "value": 2}, {"row": 18, "value": 3}, {"row": 21, "value": 26}, {"row": 24, "value": 27}, {"row": 27, "value": 31}, {"row": 30, "value": 38}, {"row": 31, "value": 41}], "duration": 41.0, "tone": 1}, {"kingdom": "유다", "name": "여호사밧(25)", "startRow": 33, "endRow": 41, "startYear": 0, "endYear": 25, "years": [{"row": 33, "value": 0}, {"row": 36, "value": 17}, {"row": 39, "value": 18}, {"row": 40, "value": 25}], "duration": 25.0, "tone": 0}, {"kingdom": "유다", "name": "여호람(8)", "startRow": 42, "endRow": 45, "startYear": 0, "endYear": 8, "years": [{"row": 42, "value": 0}, {"row": 43, "value": 2}, {"row": 44, "value": 8}], "duration": 8.0, "tone": 1}, {"kingdom": "유다", "name": "아하시야(1)", "startRow": 46, "endRow": 48, "startYear": 0, "endYear": 1, "years": [{"row": 46, "value": 0}, {"row": 47, "value": 1}], "duration": 1.0, "tone": 0}, {"kingdom": "유다", "name": "아달랴(6)", "startRow": 49, "endRow": 51, "startYear": 0, "endYear": 6, "years": [{"row": 49, "value": 0}, {"row": 50, "value": 6}], "duration": 6.0, "tone": 1}, {"kingdom": "유다", "name": "요아스(40)", "startRow": 52, "endRow": 60, "startYear": 0, "endYear": 40, "years": [{"row": 52, "value": 0}, {"row": 55, "value": 23}, {"row": 58, "value": 37}, {"row": 59, "value": 40}], "duration": 40.0, "tone": 0}, {"kingdom": "유다", "name": "아마샤(29)", "startRow": 61, "endRow": 66, "startYear": 0, "endYear": 29, "years": [{"row": 61, "value": 0}, {"row": 64, "value": 15}, {"row": 65, "value": 29}], "duration": 29.0, "tone": 1}, {"kingdom": "유다", "name": "웃시야(아사랴)(52)", "startRow": 67, "endRow": 83, "startYear": 0, "endYear": 52, "years": [{"row": 67, "value": 0}, {"row": 70, "value": 38}, {"row": 73, "value": 39}, {"row": 76, "value": 39}, {"row": 79, "value": 50}, {"row": 82, "value": 52}], "duration": 52.0, "tone": 0}, {"kingdom": "유다", "name": "요담(16)", "startRow": 84, "endRow": 86, "startYear": 0, "endYear": 16, "years": [{"row": 84, "value": 0}, {"row": 85, "value": 16}], "duration": 16.0, "tone": 1}, {"kingdom": "유다", "name": "아하스(16)", "startRow": 87, "endRow": 92, "startYear": 0, "endYear": 16, "years": [{"row": 87, "value": 0}, {"row": 90, "value": 12}, {"row": 91, "value": 16}], "duration": 16.0, "tone": 0}, {"kingdom": "유다", "name": "히스기야(29)", "startRow": 93, "endRow": 101, "startYear": 0, "endYear": 29, "years": [{"row": 93, "value": 0}, {"row": 96, "value": 6}, {"row": 98, "value": 14}, {"row": 100, "value": 29}], "duration": 29.0, "tone": 1}, {"kingdom": "유다", "name": "므낫세(55)", "startRow": 102, "endRow": 104, "startYear": 0, "endYear": 55, "years": [{"row": 102, "value": 0}, {"row": 103, "value": 55}], "duration": 55.0, "tone": 0}, {"kingdom": "유다", "name": "아몬(2)", "startRow": 105, "endRow": 107, "startYear": 0, "endYear": 2, "years": [{"row": 105, "value": 0}, {"row": 106, "value": 2}], "duration": 2.0, "tone": 1}, {"kingdom": "유다", "name": "요시야(31)", "startRow": 108, "endRow": 110, "startYear": 0, "endYear": 31, "years": [{"row": 108, "value": 0}, {"row": 109, "value": 31}], "duration": 31.0, "tone": 0}, {"kingdom": "유다", "name": "여호아하스(0.25)", "startRow": 111, "endRow": 113, "startYear": 0, "endYear": 0.25, "years": [{"row": 111, "value": 0}, {"row": 112, "value": 0.25}], "duration": 0.25, "tone": 1}, {"kingdom": "유다", "name": "엘리야김/여호야김(11)", "startRow": 114, "endRow": 116, "startYear": 0, "endYear": 11, "years": [{"row": 114, "value": 0}, {"row": 115, "value": 11}], "duration": 11.0, "tone": 0}, {"kingdom": "유다", "name": "여호야긴(0.25)", "startRow": 117, "endRow": 119, "startYear": 0, "endYear": 0.25, "years": [{"row": 117, "value": 0}, {"row": 118, "value": 0.25}], "duration": 0.25, "tone": 1}, {"kingdom": "유다", "name": "맛다디야/시드기야(11)", "startRow": 120, "endRow": 121, "startYear": 0, "endYear": 11, "years": [{"row": 120, "value": 0}, {"row": 121, "value": 11}], "duration": 11.0, "tone": 0}], "israel": [{"kingdom": "이스라엘", "name": "여로보암(22)", "startRow": 6, "endRow": 14, "startYear": 0, "endYear": 22, "years": [{"row": 6, "value": 0}, {"row": 9, "value": 18}, {"row": 12, "value": 20}, {"row": 13, "value": 22}], "duration": 22.0, "tone": 0}, {"kingdom": "이스라엘", "name": "나답(2)", "startRow": 15, "endRow": 17, "startYear": 0, "endYear": 2, "years": [{"row": 15, "value": 0}, {"row": 16, "value": 2}], "duration": 2.0, "tone": 1}, {"kingdom": "이스라엘", "name": "바아사(24)", "startRow": 18, "endRow": 20, "startYear": 0, "endYear": 24, "years": [{"row": 18, "value": 0}, {"row": 19, "value": 24}], "duration": 24.0, "tone": 0}, {"kingdom": "이스라엘", "name": "엘라(2)", "startRow": 21, "endRow": 23, "startYear": 0, "endYear": 2, "years": [{"row": 21, "value": 0}, {"row": 22, "value": 2}], "duration": 2.0, "tone": 1}, {"kingdom": "이스라엘", "name": "시므리(0)", "startRow": 24, "endRow": 26, "startYear": 0, "endYear": 0, "years": [{"row": 24, "value": 0}, {"row": 25, "value": 0}], "duration": 0.0, "tone": 0}, {"kingdom": "이스라엘", "name": "오므리(12)", "startRow": 27, "endRow": 29, "startYear": 0, "endYear": 12, "years": [{"row": 27, "value": 0}, {"row": 28, "value": 12}], "duration": 12.0, "tone": 1}, {"kingdom": "이스라엘", "name": "아합(22)", "startRow": 30, "endRow": 35, "startYear": 0, "endYear": 22, "years": [{"row": 30, "value": 0}, {"row": 33, "value": 4}, {"row": 34, "value": 22}], "duration": 22.0, "tone": 0}, {"kingdom": "이스라엘", "name": "아하시야(2)", "startRow": 36, "endRow": 38, "startYear": 0, "endYear": 2, "years": [{"row": 36, "value": 0}, {"row": 37, "value": 2}], "duration": 2.0, "tone": 1}, {"kingdom": "이스라엘", "name": "요람(여호람)(12)", "startRow": 39, "endRow": 48, "startYear": 0, "endYear": 12, "years": [{"row": 39, "value": 0}, {"row": 42, "value": 5}, {"row": 46, "value": 11}, {"row": 47, "value": 12}], "duration": 12.0, "tone": 0}, {"kingdom": "이스라엘", "name": "예후(28)", "startRow": 49, "endRow": 54, "startYear": 0, "endYear": 28, "years": [{"row": 49, "value": 0}, {"row": 52, "value": 7}, {"row": 53, "value": 28}], "duration": 28.0, "tone": 1}, {"kingdom": "이스라엘", "name": "여호아하스(17)", "startRow": 55, "endRow": 57, "startYear": 0, "endYear": 17, "years": [{"row": 55, "value": 0}, {"row": 56, "value": 17}], "duration": 17.0, "tone": 0}, {"kingdom": "이스라엘", "name": "여호아스(16)", "startRow": 58, "endRow": 63, "startYear": 0, "endYear": 16, "years": [{"row": 58, "value": 0}, {"row": 61, "value": 2}, {"row": 62, "value": 16}], "duration": 16.0, "tone": 1}, {"kingdom": "이스라엘", "name": "여로보암2(41)", "startRow": 64, "endRow": 69, "startYear": 0, "endYear": 41, "years": [{"row": 64, "value": 0}, {"row": 67, "value": 27}, {"row": 68, "value": 41}], "duration": 41.0, "tone": 0}, {"kingdom": "이스라엘", "name": "스가랴(0.5)", "startRow": 70, "endRow": 72, "startYear": 0, "endYear": 0.5, "years": [{"row": 70, "value": 0}, {"row": 71, "value": 0.5}], "duration": 0.5, "tone": 1}, {"kingdom": "이스라엘", "name": "살룸(0.1)", "startRow": 73, "endRow": 75, "startYear": 0, "endYear": 0.1, "years": [{"row": 73, "value": 0}, {"row": 74, "value": 0.1}], "duration": 0.1, "tone": 0}, {"kingdom": "이스라엘", "name": "므나헴(10)", "startRow": 76, "endRow": 78, "startYear": 0, "endYear": 10, "years": [{"row": 76, "value": 0}, {"row": 77, "value": 10}], "duration": 10.0, "tone": 1}, {"kingdom": "이스라엘", "name": "브기히야(2)", "startRow": 79, "endRow": 81, "startYear": 0, "endYear": 2, "years": [{"row": 79, "value": 0}, {"row": 80, "value": 2}], "duration": 2.0, "tone": 0}, {"kingdom": "이스라엘", "name": "베가(20)", "startRow": 82, "endRow": 89, "startYear": 0, "endYear": 20, "years": [{"row": 82, "value": 0}, {"row": 84, "value": 2}, {"row": 87, "value": 17}, {"row": 88, "value": 20}], "duration": 20.0, "tone": 1}, {"kingdom": "이스라엘", "name": "호세아(9)", "startRow": 90, "endRow": 95, "startYear": 0, "endYear": 9, "years": [{"row": 90, "value": 0}, {"row": 93, "value": 3}, {"row": 94, "value": 9}], "duration": 9.0, "tone": 0}, {"kingdom": "이스라엘", "name": "앗시리아 살만에셀", "startRow": 96, "endRow": 97, "startYear": 0, "endYear": 0, "years": [{"row": 96, "value": 0}], "duration": null, "tone": 1}, {"kingdom": "이스라엘", "name": "앗시리아 산헤립", "startRow": 98, "endRow": 99, "startYear": 0, "endYear": 0, "years": [{"row": 98, "value": 0}], "duration": null, "tone": 0}, {"kingdom": "이스라엘", "name": "앗시리아 에살핫돈", "startRow": 100, "endRow": 114, "startYear": 0, "endYear": 0, "years": [{"row": 100, "value": 0}], "duration": null, "tone": 1}, {"kingdom": "이스라엘", "name": "바빌로니아 느부갓네살", "startRow": 115, "endRow": 121, "startYear": 0, "endYear": 8, "years": [{"row": 115, "value": 0}, {"row": 120, "value": 8}], "duration": null, "tone": 0}]}, "summary": {"total": 44, "judah": 21, "israel": 23, "average": 16.9, "longest": {"name": "므낫세", "kingdom": "유다", "durationText": "55년"}}};
+    const board = document.querySelector("#board");
+    const laneJudah = document.querySelector("#lane-judah");
+    const laneIsrael = document.querySelector("#lane-israel");
+    const rowHeight = 32;
+    const blankRowHeight = 3;
+    const rowWeights = new Map(DATA.rows.map(row => [
+      row.row,
+      row.cells.some(value => value !== null && value !== "") ? rowHeight : blankRowHeight
+    ]));
+
+    function visualY(rowNumber) {
+      let y = 0;
+      for (let row = 2; row < rowNumber; row += 1) {
+        y += rowWeights.get(row) ?? rowHeight;
+      }
+      return y;
+    }
+
+    function displayValue(value) {
+      if (value == null) return "";
+      if (typeof value === "number" && Number.isInteger(value)) return String(value);
+      return String(value);
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+    }
+
+    function renderCard(card) {
+      const top = Math.max(0, visualY(card.startRow));
+      const yearRows = (card.years || []).map(item => item.row);
+      const visualEndRow = yearRows.length ? Math.max(...yearRows) : card.startRow;
+      const height = Math.max(32, visualY(visualEndRow) - visualY(card.startRow) + 30);
+      const kingdomClass = card.kingdom === "유다" ? "judah" : "israel";
+      const markers = (card.years || []).map(item => {
+        const markerTop = Math.max(8, visualY(item.row) - visualY(card.startRow) + 8);
+        return `<span class="year-marker" style="top:${markerTop}px">${escapeHtml(displayValue(item.value))}</span>`;
+      }).join("");
+      const markerPositions = (card.years || []).map(item => Math.max(8, visualY(item.row) - visualY(card.startRow) + 8));
+      const arrows = markerPositions.slice(0, -1).map((pos, index) => {
+        const next = markerPositions[index + 1];
+        return `<span class="year-arrow" style="top:${pos + 19}px; height:${Math.max(8, next - pos - 24)}px"></span>`;
+      }).join("");
+      return `
+        <article class="king-card ${kingdomClass} tone-${card.tone}" data-kingdom="${escapeHtml(card.kingdom)}" data-name="${escapeHtml(card.name)}" style="top:${top}px; height:${height}px">
+          <div class="king-name">${escapeHtml(card.name)}</div>
+          ${arrows}
+          ${markers}
+        </article>
+      `;
+    }
+
+    function renderBoard() {
+      const rowCount = Math.max(...DATA.rows.map(row => row.row)) - 1;
+      board.style.setProperty("--rows", rowCount);
+      board.style.setProperty("--row-h", `${rowHeight}px`);
+      board.style.minHeight = `${visualY(rowCount + 2)}px`;
+      laneJudah.innerHTML = DATA.cards.judah.map(renderCard).join("");
+      laneIsrael.innerHTML = DATA.cards.israel.map(renderCard).join("");
+    }
+    renderBoard();
+  </script>
+</body>
+</html>
