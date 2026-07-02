@@ -238,6 +238,9 @@ def html_page(data: dict) -> str:
       padding: 2px;
     }}
     .board-head {{
+      position: sticky;
+      top: 0;
+      z-index: 5;
       grid-column: 1 / -1;
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -250,6 +253,8 @@ def html_page(data: dict) -> str:
       font-weight: 650;
       text-align: center;
       border-bottom: 1px solid rgba(28, 24, 20, .42);
+      background: rgba(247, 245, 234, .96);
+      backdrop-filter: blur(10px);
     }}
     .lane {{
       position: relative;
@@ -353,9 +358,48 @@ def html_page(data: dict) -> str:
       border-top: 7px solid rgba(20, 17, 14, .62);
     }}
     @media (max-width: 860px) {{
-      .shell {{ padding-inline: 14px; }}
-      .board {{ min-width: 680px; column-gap: 12px; padding-inline: 2px; }}
-      .board-head {{ column-gap: 12px; }}
+      .shell {{ padding: 14px 8px 32px; }}
+      h1 {{ font-size: clamp(1.8rem, 9vw, 2.8rem); }}
+      .board-wrap {{ max-height: 86vh; overflow-x: hidden; }}
+      .board {{
+        width: 100%;
+        min-width: 0;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        column-gap: 8px;
+        padding-inline: 4px;
+      }}
+      .board-head {{
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        column-gap: 8px;
+        font-size: .76rem;
+      }}
+      .king-card {{
+        padding: 6px 6px 10px;
+        font-size: .82rem;
+      }}
+      .king-name {{
+        left: 6px;
+        right: 46px;
+        max-width: calc(100% - 52px);
+        padding: 2px 4px;
+      }}
+      .king-card.israel .king-name {{
+        left: 46px;
+        right: 6px;
+      }}
+      .year-marker {{
+        right: 5px;
+        width: 30px;
+      }}
+      .king-card.israel .year-marker {{
+        left: 8px;
+      }}
+      .year-arrow {{
+        right: 19.5px;
+      }}
+      .king-card.israel .year-arrow {{
+        left: 22.5px;
+      }}
     }}
   </style>
 </head>
