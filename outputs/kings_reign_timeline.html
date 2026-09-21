@@ -241,18 +241,18 @@
       h1 { font-size: clamp(1.8rem, 9vw, 2.8rem); }
       .board-wrap { max-height: 86vh; overflow-x: hidden; }
       .board {
-        --prophet-slot: 34px;
-        --pj-width: 34px;
-        --pi-width: 34px;
+        --prophet-slot: 42px;
+        --pj-width: 42px;
+        --pi-width: 42px;
         width: 100%;
         min-width: 0;
-        grid-template-columns: 34px minmax(0, 1fr) minmax(0, 1fr) 34px;
-        column-gap: 6px;
+        grid-template-columns: 42px minmax(0, 1fr) minmax(0, 1fr) 42px;
+        column-gap: 5px;
         padding-inline: 4px;
       }
       .board-head {
-        grid-template-columns: 34px minmax(0, 1fr) minmax(0, 1fr) 34px;
-        column-gap: 6px;
+        grid-template-columns: 42px minmax(0, 1fr) minmax(0, 1fr) 42px;
+        column-gap: 5px;
         font-size: .72rem;
       }
       .board-head .side-label { font-size: .62rem; }
@@ -284,9 +284,15 @@
         left: 22.5px;
       }
       .prophet-card {
-        width: 32px;
-        padding: 4px 2px;
-        font-size: .58rem;
+        left: 0 !important;
+        width: 100%;
+        padding: 5px 3px;
+        font-size: .62rem;
+        line-height: 1.22;
+        z-index: calc(10 + var(--overlap-index, 0));
+        transform: translateY(calc(var(--overlap-index, 0) * 17px));
+        background: rgba(207, 220, 246, .88);
+        box-shadow: 0 -2px 0 rgba(247, 245, 234, .9), 0 2px 5px rgba(23, 38, 74, .13);
       }
       .prophet-card em { display: none; }
     }
@@ -424,7 +430,7 @@
           const top = visualY(item.r1);
           const height = Math.max(30, visualY(item.r2) - top + 30);
           const [main, sub] = item.text.split("\n");
-          return `<aside class="prophet-card" title="${escapeHtml(main + " - " + item.note)}" style="top:${top}px; height:${height}px; left:calc(${slot} * var(--prophet-slot))">${escapeHtml(main)}${sub ? `<em>${escapeHtml(sub)}</em>` : ""}</aside>`;
+          return `<aside class="prophet-card" title="${escapeHtml(main + " - " + item.note)}" style="--overlap-index:${item.slot}; --overlap-count:${count}; top:${top}px; height:${height}px; left:calc(${slot} * var(--prophet-slot))">${escapeHtml(main)}${sub ? `<em>${escapeHtml(sub)}</em>` : ""}</aside>`;
         }).join("");
       };
 
