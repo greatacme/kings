@@ -492,11 +492,11 @@ def html_page(data: dict) -> str:
         font-size: .62rem;
         line-height: 1.22;
         z-index: calc(10 + var(--overlap-index, 0));
-        transform: translateY(calc(var(--overlap-index, 0) * 12px));
+        transform: translateY(var(--mobile-shift, 0px));
         box-shadow: 0 -2px 0 rgba(247, 245, 234, .9), 0 2px 5px rgba(23, 38, 74, .13);
       }}
       .prophet-card.active {{
-        transform: translate(-3px, calc(var(--overlap-index, 0) * 12px));
+        transform: translate(-3px, var(--mobile-shift, 0px));
         width: calc(100% - var(--overlap-index, 0) * 3px + 3px);
       }}
       .prophet-card em {{ display: none; }}
@@ -636,13 +636,20 @@ def html_page(data: dict) -> str:
         }});
         const count = Math.max(1, busy.length);
         board.style.setProperty(varName, count);
+        let nextMobileLabelTop = -Infinity;
+        list.forEach(item => {{
+          const naturalTop = visualY(item.r1);
+          const mobileTop = Math.max(naturalTop, nextMobileLabelTop);
+          item.mobileShift = mobileTop - naturalTop;
+          nextMobileLabelTop = mobileTop + 30;
+        }});
         el.innerHTML = list.map(item => {{
           const slot = lane === "J" ? count - 1 - item.slot : item.slot;
           const top = visualY(item.r1);
           const height = Math.max(30, visualY(item.r2) - top + 30);
           const [main, sub] = item.text.split("\\n");
           const [bg, border, text] = tones[item.slot % tones.length];
-          return `<aside class="prophet-card" role="button" tabindex="0" aria-pressed="false" title="${{escapeHtml(main + " - " + item.note)}}" style="--overlap-index:${{item.slot}}; --overlap-count:${{count}}; --prophet-bg:${{bg}}; --prophet-border:${{border}}; --prophet-text:${{text}}; top:${{top}}px; height:${{height}}px; left:calc(${{slot}} * var(--prophet-slot))">${{escapeHtml(main)}}${{sub ? `<em>${{escapeHtml(sub)}}</em>` : ""}}</aside>`;
+          return `<aside class="prophet-card" role="button" tabindex="0" aria-pressed="false" title="${{escapeHtml(main + " - " + item.note)}}" style="--overlap-index:${{item.slot}}; --overlap-count:${{count}}; --mobile-shift:${{item.mobileShift}}px; --prophet-bg:${{bg}}; --prophet-border:${{border}}; --prophet-text:${{text}}; top:${{top}}px; height:${{height}}px; left:calc(${{slot}} * var(--prophet-slot))">${{escapeHtml(main)}}${{sub ? `<em>${{escapeHtml(sub)}}</em>` : ""}}</aside>`;
         }}).join("");
       }};
 
