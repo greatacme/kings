@@ -491,7 +491,7 @@ def html_page(data: dict) -> str:
         padding: 5px 3px;
         font-size: .62rem;
         line-height: 1.22;
-        z-index: calc(10 + var(--overlap-index, 0));
+        z-index: calc(10 + var(--stack-order, 0));
         transform: translateY(var(--mobile-shift, 0px));
         box-shadow: 0 -2px 0 rgba(247, 245, 234, .9), 0 2px 5px rgba(23, 38, 74, .13);
       }}
@@ -643,13 +643,13 @@ def html_page(data: dict) -> str:
           item.mobileShift = mobileTop - naturalTop;
           nextMobileLabelTop = mobileTop + 30;
         }});
-        el.innerHTML = list.map(item => {{
+        el.innerHTML = list.map((item, stackOrder) => {{
           const slot = lane === "J" ? count - 1 - item.slot : item.slot;
           const top = visualY(item.r1);
           const height = Math.max(30, visualY(item.r2) - top + 30);
           const [main, sub] = item.text.split("\\n");
           const [bg, border, text] = tones[item.slot % tones.length];
-          return `<aside class="prophet-card" role="button" tabindex="0" aria-pressed="false" title="${{escapeHtml(main + " - " + item.note)}}" style="--overlap-index:${{item.slot}}; --overlap-count:${{count}}; --mobile-shift:${{item.mobileShift}}px; --prophet-bg:${{bg}}; --prophet-border:${{border}}; --prophet-text:${{text}}; top:${{top}}px; height:${{height}}px; left:calc(${{slot}} * var(--prophet-slot))">${{escapeHtml(main)}}${{sub ? `<em>${{escapeHtml(sub)}}</em>` : ""}}</aside>`;
+          return `<aside class="prophet-card" role="button" tabindex="0" aria-pressed="false" title="${{escapeHtml(main + " - " + item.note)}}" style="--overlap-index:${{item.slot}}; --overlap-count:${{count}}; --stack-order:${{stackOrder}}; --mobile-shift:${{item.mobileShift}}px; --prophet-bg:${{bg}}; --prophet-border:${{border}}; --prophet-text:${{text}}; top:${{top}}px; height:${{height}}px; left:calc(${{slot}} * var(--prophet-slot))">${{escapeHtml(main)}}${{sub ? `<em>${{escapeHtml(sub)}}</em>` : ""}}</aside>`;
         }}).join("");
       }};
 
