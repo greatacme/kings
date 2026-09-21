@@ -63,7 +63,7 @@
     .board-head {
       position: sticky;
       top: 0;
-      z-index: 5;
+      z-index: 100;
       grid-column: 1 / -1;
       display: grid;
       grid-template-columns: var(--pj-width) minmax(260px, 1fr) minmax(260px, 1fr) var(--pi-width);
@@ -76,7 +76,7 @@
       font-weight: 650;
       text-align: center;
       border-bottom: 1px solid rgba(28, 24, 20, .42);
-      background: rgba(247, 245, 234, .96);
+      background: #f7f5ea;
       backdrop-filter: blur(10px);
     }
     .lane {
@@ -217,16 +217,34 @@
       box-sizing: border-box;
       width: calc(var(--prophet-slot) - 4px);
       padding: 5px 4px;
-      border: 1px solid #4f6db3;
+      border: 1px solid var(--prophet-border, #4f6db3);
       border-radius: 3px;
-      background: linear-gradient(135deg, #e7eefc 0%, #bfd0f1 100%);
-      color: #17264a;
+      background: var(--prophet-bg, #d7e2f7);
+      color: var(--prophet-text, #17264a);
       text-align: center;
       line-height: 1.18;
       font-size: .75rem;
       font-weight: 700;
       overflow: hidden;
       overflow-wrap: anywhere;
+      cursor: pointer;
+      transition: opacity .16s ease, filter .16s ease, box-shadow .16s ease, transform .16s ease;
+    }
+    .prophet-card:hover,
+    .prophet-card:focus-visible {
+      filter: saturate(1.18) brightness(1.02);
+      outline: 2px solid #17130f;
+      outline-offset: -2px;
+    }
+    .lane.has-active .prophet-card:not(.active) {
+      opacity: .25;
+      filter: grayscale(.45);
+    }
+    .prophet-card.active {
+      z-index: 90 !important;
+      opacity: 1;
+      filter: saturate(1.25);
+      box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--prophet-border, #4f6db3), 0 7px 16px rgba(25, 20, 16, .28);
     }
     .prophet-card em {
       display: block;
@@ -284,15 +302,18 @@
         left: 22.5px;
       }
       .prophet-card {
-        left: 0 !important;
-        width: 100%;
+        left: calc(var(--overlap-index, 0) * 3px) !important;
+        width: calc(100% - var(--overlap-index, 0) * 3px);
         padding: 5px 3px;
         font-size: .62rem;
         line-height: 1.22;
         z-index: calc(10 + var(--overlap-index, 0));
-        transform: translateY(calc(var(--overlap-index, 0) * 17px));
-        background: rgba(207, 220, 246, .88);
+        transform: translateY(calc(var(--overlap-index, 0) * 12px));
         box-shadow: 0 -2px 0 rgba(247, 245, 234, .9), 0 2px 5px rgba(23, 38, 74, .13);
+      }
+      .prophet-card.active {
+        transform: translate(-3px, calc(var(--overlap-index, 0) * 12px));
+        width: calc(100% - var(--overlap-index, 0) * 3px + 3px);
       }
       .prophet-card em { display: none; }
     }
@@ -414,6 +435,12 @@
       });
 
       const draw = (lane, el, varName) => {
+        const tones = [
+          ["#d8e4fa", "#496bb3", "#17264a"],
+          ["#eadcf5", "#8056a4", "#351c49"],
+          ["#d5eee7", "#397b70", "#173d37"],
+          ["#f7ddd8", "#a65c50", "#4d211b"]
+        ];
         const list = groups[lane];
         list.sort((a, b) => a.r1 - b.r1 || (b.r2 - b.r1) - (a.r2 - a.r1));
         const busy = [];
@@ -430,12 +457,36 @@
           const top = visualY(item.r1);
           const height = Math.max(30, visualY(item.r2) - top + 30);
           const [main, sub] = item.text.split("\n");
-          return `<aside class="prophet-card" title="${escapeHtml(main + " - " + item.note)}" style="--overlap-index:${item.slot}; --overlap-count:${count}; top:${top}px; height:${height}px; left:calc(${slot} * var(--prophet-slot))">${escapeHtml(main)}${sub ? `<em>${escapeHtml(sub)}</em>` : ""}</aside>`;
+          const [bg, border, text] = tones[item.slot % tones.length];
+          return `<aside class="prophet-card" role="button" tabindex="0" aria-pressed="false" title="${escapeHtml(main + " - " + item.note)}" style="--overlap-index:${item.slot}; --overlap-count:${count}; --prophet-bg:${bg}; --prophet-border:${border}; --prophet-text:${text}; top:${top}px; height:${height}px; left:calc(${slot} * var(--prophet-slot))">${escapeHtml(main)}${sub ? `<em>${escapeHtml(sub)}</em>` : ""}</aside>`;
         }).join("");
       };
 
       draw("J", laneProphetsJudah, "--pj-count");
       draw("I", laneProphetsIsrael, "--pi-count");
+
+      const toggleProphet = card => {
+        const lane = card.parentElement;
+        const shouldActivate = !card.classList.contains("active");
+        lane.querySelectorAll(".prophet-card").forEach(item => {
+          item.classList.remove("active");
+          item.setAttribute("aria-pressed", "false");
+        });
+        lane.classList.toggle("has-active", shouldActivate);
+        if (shouldActivate) {
+          card.classList.add("active");
+          card.setAttribute("aria-pressed", "true");
+        }
+      };
+      board.querySelectorAll(".prophet-card").forEach(card => {
+        card.addEventListener("click", () => toggleProphet(card));
+        card.addEventListener("keydown", event => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            toggleProphet(card);
+          }
+        });
+      });
     }
 
     function renderBoard() {
