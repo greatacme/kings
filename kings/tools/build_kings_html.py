@@ -4,7 +4,7 @@ from pathlib import Path
 import json
 import re
 
-import openpyxl
+ENRICHED_DATA = Path(__file__).resolve().parents[1] / "data" / "timeline_enriched.json"
 
 
 def find_source() -> Path:
@@ -41,6 +41,8 @@ def fmt_years(value: float | None) -> str:
 
 
 def build_data(path: Path) -> dict:
+    import openpyxl
+
     wb = openpyxl.load_workbook(path, data_only=True)
     ws = wb.active
     rulers = []
@@ -210,7 +212,7 @@ def html_page(data: dict) -> str:
       font-family: "Pretendard Variable", Pretendard, "SUIT Variable", SUIT, "Noto Sans KR", "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
       line-height: 1.5;
     }}
-    .shell {{ max-width: 1180px; margin: 0 auto; padding: 22px 16px 44px; }}
+    .shell {{ max-width: 1320px; margin: 0 auto; padding: 22px 16px 44px; }}
     header {{
       padding: 6px 0 14px;
     }}
@@ -230,11 +232,16 @@ def html_page(data: dict) -> str:
       box-shadow: var(--shadow);
     }}
     .board {{
-      min-width: 860px;
+      --prophet-slot: 58px;
+      --pj-count: 2;
+      --pi-count: 2;
+      --pj-width: max(72px, calc(var(--pj-count) * var(--prophet-slot)));
+      --pi-width: max(72px, calc(var(--pi-count) * var(--prophet-slot)));
+      min-width: 1040px;
       position: relative;
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      column-gap: 18px;
+      grid-template-columns: var(--pj-width) minmax(260px, 1fr) minmax(260px, 1fr) var(--pi-width);
+      column-gap: 12px;
       padding: 2px;
     }}
     .board-head {{
@@ -243,8 +250,8 @@ def html_page(data: dict) -> str:
       z-index: 5;
       grid-column: 1 / -1;
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      column-gap: 18px;
+      grid-template-columns: var(--pj-width) minmax(260px, 1fr) minmax(260px, 1fr) var(--pi-width);
+      column-gap: 12px;
       align-items: center;
       height: 34px;
       margin-bottom: 2px;
@@ -260,8 +267,10 @@ def html_page(data: dict) -> str:
       position: relative;
       min-height: calc(var(--rows, 120) * var(--row-h, 32px));
     }}
-    .lane.judah {{ grid-column: 1; }}
-    .lane.israel {{ grid-column: 2; }}
+    .lane.prophets-j {{ grid-column: 1; }}
+    .lane.judah {{ grid-column: 2; }}
+    .lane.israel {{ grid-column: 3; }}
+    .lane.prophets-i {{ grid-column: 4; }}
     .king-card {{
       position: absolute;
       left: 0;
@@ -294,6 +303,36 @@ def html_page(data: dict) -> str:
       color: #152213;
       background: linear-gradient(135deg, #d9ecd0 0%, #a7d38e 100%);
       border-color: #5d843e;
+    }}
+    .king-card.power-assyria.tone-0 {{
+      color: #22222a;
+      background: linear-gradient(135deg, #ececf0 0%, #cfcfd8 100%);
+      border-color: #6b6b78;
+    }}
+    .king-card.power-assyria.tone-1 {{
+      color: #22222a;
+      background: linear-gradient(135deg, #dedee5 0%, #b9b9c6 100%);
+      border-color: #5a5a68;
+    }}
+    .king-card.power-babylon.tone-0 {{
+      color: #2b1740;
+      background: linear-gradient(135deg, #efe4f8 0%, #d6bdec 100%);
+      border-color: #7a4fa3;
+    }}
+    .king-card.power-babylon.tone-1 {{
+      color: #2b1740;
+      background: linear-gradient(135deg, #e3d1f1 0%, #c9a4e1 100%);
+      border-color: #6f4198;
+    }}
+    .king-card.power-persia.tone-0 {{
+      color: #3a1530;
+      background: linear-gradient(135deg, #f9e3f0 0%, #efbcd9 100%);
+      border-color: #a04f86;
+    }}
+    .king-card.power-persia.tone-1 {{
+      color: #3a1530;
+      background: linear-gradient(135deg, #f3d2e6 0%, #e3a3cb 100%);
+      border-color: #8c3f72;
     }}
     .king-card.israel {{
       text-align: right;
@@ -357,22 +396,50 @@ def html_page(data: dict) -> str:
       border-right: 4px solid transparent;
       border-top: 7px solid rgba(20, 17, 14, .62);
     }}
+    .prophet-card {{
+      position: absolute;
+      box-sizing: border-box;
+      width: calc(var(--prophet-slot) - 4px);
+      padding: 5px 4px;
+      border: 1px solid #4f6db3;
+      border-radius: 3px;
+      background: linear-gradient(135deg, #e7eefc 0%, #bfd0f1 100%);
+      color: #17264a;
+      text-align: center;
+      line-height: 1.18;
+      font-size: .75rem;
+      font-weight: 700;
+      overflow: hidden;
+      overflow-wrap: anywhere;
+    }}
+    .prophet-card em {{
+      display: block;
+      margin-top: 3px;
+      font-style: normal;
+      font-size: .66rem;
+      font-weight: 500;
+      opacity: .78;
+    }}
     @media (max-width: 860px) {{
       .shell {{ padding: 14px 8px 32px; }}
       h1 {{ font-size: clamp(1.8rem, 9vw, 2.8rem); }}
       .board-wrap {{ max-height: 86vh; overflow-x: hidden; }}
       .board {{
+        --prophet-slot: 34px;
+        --pj-width: 34px;
+        --pi-width: 34px;
         width: 100%;
         min-width: 0;
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-        column-gap: 8px;
+        grid-template-columns: 34px minmax(0, 1fr) minmax(0, 1fr) 34px;
+        column-gap: 6px;
         padding-inline: 4px;
       }}
       .board-head {{
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-        column-gap: 8px;
-        font-size: .76rem;
+        grid-template-columns: 34px minmax(0, 1fr) minmax(0, 1fr) 34px;
+        column-gap: 6px;
+        font-size: .72rem;
       }}
+      .board-head .side-label {{ font-size: .62rem; }}
       .king-card {{
         padding: 6px 6px 10px;
         font-size: .82rem;
@@ -400,6 +467,12 @@ def html_page(data: dict) -> str:
       .king-card.israel .year-arrow {{
         left: 22.5px;
       }}
+      .prophet-card {{
+        width: 32px;
+        padding: 4px 2px;
+        font-size: .58rem;
+      }}
+      .prophet-card em {{ display: none; }}
     }}
   </style>
 </head>
@@ -412,11 +485,15 @@ def html_page(data: dict) -> str:
     <section class="board-wrap" aria-label="왕국별 재위기간 비교 보드">
       <div class="board" id="board">
         <div class="board-head">
+          <strong class="side-label">선지자</strong>
           <strong>유다(예루살렘)</strong>
           <strong>이스라엘(사마리아)</strong>
+          <strong class="side-label">선지자</strong>
         </div>
+        <div class="lane prophets-j" id="lane-prophets-j"></div>
         <div class="lane judah" id="lane-judah"></div>
         <div class="lane israel" id="lane-israel"></div>
+        <div class="lane prophets-i" id="lane-prophets-i"></div>
       </div>
     </section>
   </main>
@@ -424,8 +501,10 @@ def html_page(data: dict) -> str:
   <script>
     const DATA = {data_json};
     const board = document.querySelector("#board");
+    const laneProphetsJudah = document.querySelector("#lane-prophets-j");
     const laneJudah = document.querySelector("#lane-judah");
     const laneIsrael = document.querySelector("#lane-israel");
+    const laneProphetsIsrael = document.querySelector("#lane-prophets-i");
     const rowHeight = 32;
     const blankRowHeight = 3;
     const rowWeights = new Map(DATA.rows.map(row => [
@@ -451,12 +530,26 @@ def html_page(data: dict) -> str:
       return String(value).replace(/[&<>"']/g, ch => ({{ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }}[ch]));
     }}
 
+    function powerClass(card) {{
+      if (card.name.startsWith("앗시리아")) return "power-assyria";
+      if (card.name.startsWith("바빌로니아")) return "power-babylon";
+      if (card.name.startsWith("페르시아")) return "power-persia";
+      return "";
+    }}
+
+    function lastRowOf(card) {{
+      if (card.endRow) return card.endRow;
+      const rows = (card.years || []).map(item => item.row);
+      return rows.length ? Math.max(...rows) : card.startRow;
+    }}
+
     function renderCard(card) {{
       const top = Math.max(0, visualY(card.startRow));
       const yearRows = (card.years || []).map(item => item.row);
-      const visualEndRow = yearRows.length ? Math.max(...yearRows) : card.startRow;
+      const visualEndRow = card.endRow || (yearRows.length ? Math.max(...yearRows) : card.startRow);
       const height = Math.max(32, visualY(visualEndRow) - visualY(card.startRow) + 30);
       const kingdomClass = card.kingdom === "유다" ? "judah" : "israel";
+      const kindClass = powerClass(card);
       const markers = (card.years || []).map(item => {{
         const markerTop = Math.max(8, visualY(item.row) - visualY(card.startRow) + 8);
         return `<span class="year-marker" style="top:${{markerTop}}px">${{escapeHtml(displayValue(item.value))}}</span>`;
@@ -467,12 +560,60 @@ def html_page(data: dict) -> str:
         return `<span class="year-arrow" style="top:${{pos + 19}}px; height:${{Math.max(8, next - pos - 24)}}px"></span>`;
       }}).join("");
       return `
-        <article class="king-card ${{kingdomClass}} tone-${{card.tone}}" data-kingdom="${{escapeHtml(card.kingdom)}}" data-name="${{escapeHtml(card.name)}}" style="top:${{top}}px; height:${{height}}px">
+        <article class="king-card ${{kingdomClass}} ${{kindClass}} tone-${{card.tone}}" data-kingdom="${{escapeHtml(card.kingdom)}}" data-name="${{escapeHtml(card.name)}}" style="top:${{top}}px; height:${{height}}px">
           <div class="king-name">${{escapeHtml(card.name)}}</div>
           ${{arrows}}
           ${{markers}}
         </article>
       `;
+    }}
+
+    function renderProphets() {{
+      const groups = {{ J: [], I: [] }};
+      (DATA.prophets || []).forEach(([lane, startName, endName, text, note]) => {{
+        const cards = lane === "J" ? DATA.cards.judah : DATA.cards.israel;
+        const first = cards.find(card => card.name === startName);
+        const last = cards.find(card => card.name === endName);
+        if (!first || !last) return;
+        groups[lane].push({{
+          r1: text === "이사야" ? 82 : first.startRow,
+          r2: lastRowOf(last),
+          text,
+          note
+        }});
+      }});
+      (DATA.extraProphets || []).forEach(item => {{
+        groups[item.lane].push({{
+          r1: item.r1,
+          r2: item.r2,
+          text: item.text,
+          note: item.note
+        }});
+      }});
+
+      const draw = (lane, el, varName) => {{
+        const list = groups[lane];
+        list.sort((a, b) => a.r1 - b.r1 || (b.r2 - b.r1) - (a.r2 - a.r1));
+        const busy = [];
+        list.forEach(item => {{
+          let slot = 0;
+          while (busy[slot] !== undefined && busy[slot] >= item.r1) slot += 1;
+          item.slot = slot;
+          busy[slot] = item.r2;
+        }});
+        const count = Math.max(1, busy.length);
+        board.style.setProperty(varName, count);
+        el.innerHTML = list.map(item => {{
+          const slot = lane === "J" ? count - 1 - item.slot : item.slot;
+          const top = visualY(item.r1);
+          const height = Math.max(30, visualY(item.r2) - top + 30);
+          const [main, sub] = item.text.split("\\n");
+          return `<aside class="prophet-card" title="${{escapeHtml(main + " - " + item.note)}}" style="top:${{top}}px; height:${{height}}px; left:calc(${{slot}} * var(--prophet-slot))">${{escapeHtml(main)}}${{sub ? `<em>${{escapeHtml(sub)}}</em>` : ""}}</aside>`;
+        }}).join("");
+      }};
+
+      draw("J", laneProphetsJudah, "--pj-count");
+      draw("I", laneProphetsIsrael, "--pi-count");
     }}
 
     function renderBoard() {{
@@ -482,6 +623,7 @@ def html_page(data: dict) -> str:
       board.style.minHeight = `${{visualY(rowCount + 2)}}px`;
       laneJudah.innerHTML = DATA.cards.judah.map(renderCard).join("");
       laneIsrael.innerHTML = DATA.cards.israel.map(renderCard).join("");
+      renderProphets();
     }}
     renderBoard();
   </script>
@@ -491,9 +633,12 @@ def html_page(data: dict) -> str:
 
 
 def main() -> None:
-    source = find_source()
-    data = build_data(source)
-    output_dir = Path.cwd() / "outputs"
+    if ENRICHED_DATA.exists():
+        data = json.loads(ENRICHED_DATA.read_text(encoding="utf-8"))
+    else:
+        source = find_source()
+        data = build_data(source)
+    output_dir = Path(__file__).resolve().parents[1] / "outputs"
     output_dir.mkdir(exist_ok=True)
     output = output_dir / "kings_reign_timeline.html"
     output.write_text(html_page(data), encoding="utf-8")
